@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Symbols pad</title>
+</head>
+<body>
+  <label for="mainInput">Digite a expressão</label>
+  <input type="text" id="mainInput">
+  <br>
+  <label for="findCharCode">Procure pelo código</label>
+  <input type="text" id="findCharCodeInput" maxlength="5">
+  <div id="findedCodesBox">
+
+  </div>
+  <br>
+  <ul id="tableKeyBind">
+
+  </ul>
+  <br>
+  <button id="defaultButton">Default settings</button>
+  <form>
+    <label for="addKeyBindInput">Adiciona um simbolo</label>
+    <input autocomplete="off" type="text" id="addKeyBindInput" maxlength="1">
+    <button type="submit">Adicionar</button>
+    <div id="keyBindName"></div>
+  </form>
+  <script src="index.js"></script>
+</body>
+</html>
