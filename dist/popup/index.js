@@ -10,13 +10,15 @@ const keyBindName = document.getElementById('keyBindName');
 
 const defaultButton = document.getElementById('defaultButton');
 
+const addKeyBindButton = document.getElementById('addKeyBindButton');
+
+const copyButton = document.getElementById('copyButton');
+
 let keyBindModifiersMap;
 
 let keyCharsMap;
 
 let lastKeyModifiers;
-
-let bidingKey;
 
 const keyPressEventListener = (e) => {
   const eventKeyModifiers = {
@@ -29,7 +31,8 @@ const keyPressEventListener = (e) => {
   for (let [keyBindName, keyBindModifiers] of Object.entries(keyBindModifiersMap)){
     if (Object.entries(keyBindModifiers).every(([modifierName, modifierValue]) => modifierValue === eventKeyModifiers[modifierName])){
       mainInput.focus();
-      mainInput.value += String.fromCharCode(keyCharsMap[keyBindName]);
+      handleInputOnMain();
+      insertCharAtCaretPos(String.fromCharCode(keyCharsMap[keyBindName]), true);
     }
   }
   console.log(eventKeyModifiers);
@@ -65,16 +68,22 @@ const handleMessage = (message, sender, sendResponse) => {
       keyCharsMap = keyCharsMapStorage;
 
       makeTableOfKeys();
+      handleIsKeyBiding();
     });
     
   }
 }
 
 const handleIsKeyBiding = () => {
-  if (bidingKey){
+  if (addKeyBindInput.value !== ''){
+    addKeyBindButton.disabled = false;
     keyBindName.innerHTML = `
-      <p><strong>${getLastKeyBindName()}</strong></p>
+      <p class="font-medium">New keyBind</p>
+      <p><strong>${getLastKeyBindName()}</strong> : ${addKeyBindInput.value}</p>
     `
+  }else{
+    addKeyBindButton.disabled = true;
+    keyBindName.innerHTML = '';
   }
 }
 
@@ -95,6 +104,7 @@ const getLastKeyBindName = () => {
 }
 
 const addKeyBind = (evento) => {
+  evento.preventDefault();
   const keyBindName = getLastKeyBindName();
   keyBindModifiersMap = {
     ...keyBindModifiersMap,
@@ -106,7 +116,9 @@ const addKeyBind = (evento) => {
   }
 
   chrome.storage.sync.set({keyBidingsMapStorage: keyBindModifiersMap, keyCharsMapStorage: keyCharsMap});
-  bidingKey = false;
+  addKeyBindInput.value = '';
+  lastKeyModifiers = null;
+  handleIsKeyBiding();
 }
 
 const defaultSettings = () => {
@@ -118,6 +130,10 @@ const requestData = () => {
 }
 
 const findCharCode = (evento) => {
+  if (evento.target.value === ''){
+    findedCodesBox.innerHTML = '';
+    return;
+  }
   const template = [];
   for (let i = 0; i < evento.target.value.length; i++){
     let char = evento.target.value[i];
@@ -128,12 +144,38 @@ const findCharCode = (evento) => {
   findedCodesBox.innerHTML = template.reduce((prev, next) => prev + next);
 } 
 
+const handleInputOnMain = (evento) => {
+  if (!evento) return;
+  if (evento.data === '('){
+    insertCharAtCaretPos(')', false);
+  }
+}
+
+const insertCharAtCaretPos = (char, moveCaret) => {
+  let caretPos = mainInput.selectionStart;
+  let firstHalf = mainInput.value.substring(0, caretPos);
+  let lastHalf = mainInput.value.substring(caretPos);
+  mainInput.value = firstHalf + char + lastHalf;
+  let newCaretPos = moveCaret? caretPos + 1: caretPos;
+  mainInput.setSelectionRange(newCaretPos, newCaretPos);
+}
+
+const copyExpression = (e) => {
+  if (mainInput.value !== ''){
+    mainInput.select();
+    document.execCommand("copy");
+    alert('Copiado');
+  }
+}
+
 document.addEventListener('keydown', keyPressEventListener);
 chrome.runtime.onMessage.addListener(handleMessage);
 defaultButton.onclick = defaultSettings;
 findCharCodeInput.oninput = findCharCode;
-document.forms[0].onsubmit = addKeyBind;
-addKeyBindInput.onfocus = (e) => bidingKey = true;
-addKeyBindInput.onblur = (e) => bidingKey = false;
+addKeyBindButton.onclick = addKeyBind;
+mainInput.oninput = handleInputOnMain;
+copyButton.onclick = copyExpression;
+
+addKeyBindInput.oninput = (e) => handleIsKeyBiding();
 
 requestData();
