@@ -11,6 +11,12 @@
   <title>Symbols pad</title>
 </head>
 <body>
+  <template id="keyBindListItem">
+    <li  class="keyBindItem">
+      <button data-delete>X</button>
+      <p data-keyBind></p>
+    </li>
+  </template>
   <input placeholder="Char" type="text" id="findCharCodeInput" maxlength="5">
   
   <div id="findedCodesBox">

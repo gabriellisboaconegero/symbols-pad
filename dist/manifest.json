@@ -1,7 +1,7 @@
 {
   "name": "Symbols pad",
   "description": "Key bind system for helping in logic exspressions",
-  "version": "1.0",
+  "version": "1.2v",
   "manifest_version": 2,
   "permissions": ["storage"],
   "background": {

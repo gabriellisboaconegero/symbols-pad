@@ -51,12 +51,16 @@ const keyPressEventListener = (e) => {
 
 const makeTableOfKeys = () => {
   let template = [];
+  let templateClone = document.getElementById('keyBindListItem');
+  tableKeyBind.innerHTML = ''
+  
   for (let [modifierName, keyCode] of Object.entries(keyCharsMap)){
-    template.push(`
-      <li><strong>${modifierName}</strong> : ${String.fromCharCode(keyCode)}</li>
-    `);
+    elementToAdd = templateClone.cloneNode(true).content.cloneNode(true);
+    elementToAdd.querySelector("[data-delete]").onclick = deleteKeyBind;
+    elementToAdd.querySelector("[data-keyBind]").innerHTML = `<strong>${modifierName}</strong> : ${String.fromCharCode(keyCode)}`;
+    elementToAdd.querySelector("li").setAttribute("id", modifierName)
+    tableKeyBind.appendChild(elementToAdd);
   }
-  tableKeyBind.innerHTML = template.reduce((prev, next) => prev + next);
 } 
 
 const handleMessage = (message, sender, sendResponse) => {
@@ -121,6 +125,31 @@ const addKeyBind = (evento) => {
   handleIsKeyBiding();
 }
 
+const deleteKeyBind = (evento) => {
+  let toDeleteKeyBindName = evento.target.parentNode.id;
+  let tempKeyModifiersMap = {}
+  for (let [keyBindName, keyBindModifiers] of Object.entries(keyBindModifiersMap)){
+    if (keyBindName !== toDeleteKeyBindName){
+      tempKeyModifiersMap = {
+        ...tempKeyModifiersMap,
+        [keyBindName]: keyBindModifiers
+      }
+    }   
+  }
+  let tempKeyCharsMap = {}
+  for (let [modifierName, keyCode] of Object.entries(keyCharsMap)){
+    if (modifierName !== toDeleteKeyBindName){
+      tempKeyCharsMap = {
+        ...tempKeyCharsMap,
+        [modifierName]: keyCode
+      }
+    }   
+  }
+  console.log(tempKeyModifiersMap)
+  console.log(tempKeyCharsMap)
+  chrome.storage.sync.set({keyBidingsMapStorage: tempKeyModifiersMap, keyCharsMapStorage: tempKeyCharsMap});
+}
+
 const defaultSettings = () => {
   chrome.storage.sync.clear();
 }
@@ -177,5 +206,7 @@ mainInput.oninput = handleInputOnMain;
 copyButton.onclick = copyExpression;
 
 addKeyBindInput.oninput = (e) => handleIsKeyBiding();
+
+
 
 requestData();
